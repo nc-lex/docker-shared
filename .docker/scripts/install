@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+ARG_HELP=
+ARG_FORCE=
+while [[ $# > 0 ]] ; do
+  case $1 in
+    -h|--help)
+      ARG_HELP=YES
+    ;;
+    -f|--force)
+      ARG_FORCE=YES
+    ;;
+  esac
+  shift
+done
+
+if [[ -n "${ARG_HELP}" ]]; then
+  echo "Install Docker"
+  echo "Usage:  $0 [OPTIONS]"
+  echo "  -f, --force           Run install commands regardless of existing binaries"
+  exit 0
+fi
+
+# Install VirtualBox
+[[ -n "${ARG_FORCE}" || -z "$(which virtualbox)" ]] && brew cask install virtualbox
+
+# Install Docker
+[[ -n "${ARG_FORCE}" || -z "$(which docker)" ]] && brew install docker
+[[ -n "${ARG_FORCE}" || -z "$(which docker-compose)" ]] && brew install docker-compose
+[[ -n "${ARG_FORCE}" || -z "$(which docker-machine)" ]] && brew install docker-machine
+
+# Install Dinghy, a custom virtual machine for Docker to run on Mac OS X
+[[ -n "${ARG_FORCE}" || -z "$(which dinghy)" ]] && brew tap codekitchen/dinghy && brew install dinghy && dinghy create --provider virtualbox --disk 40960 --cpus 2 --memory 4096 && dinghy up
+
+[[ -z "${DOCKER_HOST}" ]] && echo "Run \"eval \$(dinghy env)\" to set environment variables to connect to Docker"

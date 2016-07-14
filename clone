@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+ARG_HELP=
+ARG_PROJECT=
+
+while [[ $# > 0 ]] ; do
+  case $1 in
+    -h|--help)
+      ARG_HELP=YES
+    ;;
+    -n|--name)
+      ARG_PROJECT=$2
+      shift
+    ;;
+  esac
+  shift
+done
+
+if [[ -n "${ARG_HELP}" ]]; then
+  echo "Clone the shared Docker files to current working folder"
+  echo "Usage:  $0 -n [PROJECT]"
+  echo "  -n, --name           Specify the project name"
+  exit 0
+fi
+
+scriptPath() {
+  echo "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+}
+
+shared_path="$(scriptPath)/"
+
+files=$(find "${shared_path}.docker" -maxdepth 1 -not -name '.*')
+while read -r file; do
+  rm -rf "${file#$shared_path}"
+  cp -R "${file}" "${file#$shared_path}"
+done <<< "${files}"
